@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostgresConfigService } from 'config/postgres.config.service';
 import { RotasModule } from './rotas/rotas.module';
 import { RemessasModule } from './remessas/remessas.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -17,6 +18,7 @@ import { RemessasModule } from './remessas/remessas.module';
  }),
  RotasModule,
  RemessasModule,
+ CacheModule.register({isGlobal:true, ttl:10000})
 ],
   controllers: [AppController],
   providers: [AppService],

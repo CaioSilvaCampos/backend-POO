@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseInterceptors } from '@nestjs/common';
 import { RemessasService } from './remessas.service';
 import { CreateRemessaDto } from './dto/create-remessa.dto';
 import { UpdateRemessaDto } from './dto/update-remessa.dto';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('remessas')
+@UseInterceptors(CacheInterceptor)
 export class RemessasController {
   constructor(private readonly remessasService: RemessasService) {}
 

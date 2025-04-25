@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseInterceptors } from '@nestjs/common';
 import { RotasService } from './rotas.service';
 import { CreateRotaDto } from './dto/create-rota.dto';
 import { UpdateRotaDto } from './dto/update-rota.dto';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('rotas')
+@UseInterceptors(CacheInterceptor)
 export class RotasController {
   constructor(private readonly rotasService: RotasService) {}
 
