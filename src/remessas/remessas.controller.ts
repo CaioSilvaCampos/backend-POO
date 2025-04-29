@@ -5,7 +5,7 @@ import { UpdateRemessaDto } from './dto/update-remessa.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('remessas')
-@UseInterceptors(CacheInterceptor)
+//@UseInterceptors(CacheInterceptor)
 export class RemessasController {
   constructor(private readonly remessasService: RemessasService) {}
 

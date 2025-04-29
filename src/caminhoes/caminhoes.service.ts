@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCaminhoeDto } from './dto/create-caminhoe.dto';
+import { CreateCaminhoesDto } from './dto/create-caminhoe.dto';
 import { UpdateCaminhoeDto } from './dto/update-caminhoe.dto';
 
 @Injectable()
 export class CaminhoesService {
-  create(createCaminhoeDto: CreateCaminhoeDto) {
+  create(createCaminhoeDto: CreateCaminhoesDto) {
     return 'This action adds a new caminhoe';
   }
 

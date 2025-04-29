@@ -56,6 +56,7 @@ export class RemessasService {
         rota: {
           origem: remessa.rota.origem,
           destino: remessa.rota.destino,
+          duracao: remessa.rota.duracao
         },
       }));
     }
@@ -90,6 +91,7 @@ export class RemessasService {
       rota: {
         origem: remessa.rota.origem,
         destino: remessa.rota.destino,
+        duracao: remessa.rota.duracao
       },
     };
   }

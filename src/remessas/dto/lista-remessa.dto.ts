@@ -1,6 +1,7 @@
 export class RotaSimplesDto {
     origem: string;
     destino: string;
+    duracao: string;
 }
 
 export class RemessaRespostaDto {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min, MinLength } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString, Min, MinLength } from "class-validator";
 import { StatusRota } from "../enum/statusRota.enum";
 
 export class CreateRotaDto {
@@ -12,9 +12,9 @@ export class CreateRotaDto {
     @IsNotEmpty()
     destino:string
 
-     @IsString()
-     @IsNotEmpty()
-     distanciaKm:string
+    // @IsString()
+    // @IsNotEmpty()
+    // distanciaKm:string
 
     @IsEnum(StatusRota)
     @IsNotEmpty()

@@ -5,7 +5,7 @@ import { UpdateRotaDto } from './dto/update-rota.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('rotas')
-@UseInterceptors(CacheInterceptor)
+//@UseInterceptors(CacheInterceptor)
 export class RotasController {
   constructor(private readonly rotasService: RotasService) {}
 

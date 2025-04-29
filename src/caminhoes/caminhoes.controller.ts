@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CaminhoesService } from './caminhoes.service';
-import { CreateCaminhoeDto } from './dto/create-caminhoe.dto';
+import { CreateCaminhoesDto } from './dto/create-caminhoe.dto';
 import { UpdateCaminhoeDto } from './dto/update-caminhoe.dto';
 
 @Controller('caminhoes')
@@ -8,8 +8,8 @@ export class CaminhoesController {
   constructor(private readonly caminhoesService: CaminhoesService) {}
 
   @Post()
-  create(@Body() createCaminhoeDto: CreateCaminhoeDto) {
-    return this.caminhoesService.create(createCaminhoeDto);
+  create(@Body() createCaminhoesDto: CreateCaminhoesDto) {
+    return this.caminhoesService.create(createCaminhoesDto);
   }
 
   @Get()

@@ -20,8 +20,11 @@ export class RotaEntity {
     status: StatusRota
 
     @Column({nullable:true})
+    duracao:string;
+
+    @Column({nullable:true})
     idCaminhao: string
 
-    @OneToMany(()=> RemessaEntity, remessa=> remessa.rota, {cascade:true})
+    @OneToMany(()=> RemessaEntity, remessa=> remessa.rota)
     remessas: RemessaEntity[]
 }

@@ -23,9 +23,9 @@ export class RemessaEntity {
     @Column({nullable:false})
     tipo:string
 
-    @Column({nullable:false})
-    peso: number;
+    @Column('decimal', { precision: 10, scale: 2, nullable:true })
+    peso:number
 
-   @ManyToOne(()=> RotaEntity, rota=> rota.remessas)
+   @ManyToOne(()=> RotaEntity, rota=> rota.remessas, {cascade:true, onDelete:'CASCADE'})
     rota:RotaEntity
 }

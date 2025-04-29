@@ -18,13 +18,14 @@ export class RotasService {
   async create(createRotaDto: CreateRotaDto) {
     const rota = new RotaEntity()
 
-    //const distanciaInfo = await this.distanceService.calcularDistancia(createRotaDto.origem, createRotaDto.destino);
+    const distanciaInfo = await this.distanceService.calcularDistancia(createRotaDto.origem, createRotaDto.destino);
 
     rota.destino = createRotaDto.destino
     rota.origem = createRotaDto.origem
     rota.status = createRotaDto.status
-    //rota.distanciaKm = distanciaInfo.distancia_km
-    rota.distanciaKm = createRotaDto.distanciaKm
+    rota.distanciaKm = distanciaInfo.distancia_km
+    rota.duracao = distanciaInfo.duracao
+    //rota.distanciaKm = createRotaDto.distanciaKm
     rota.idCaminhao ? createRotaDto.idCaminhao : null
 
     const rotaSalva = await this.rotaRepository.save(rota)
@@ -59,6 +60,14 @@ export class RotasService {
 
   async update(id: string, updateRotaDto: UpdateRotaDto) {
     const rotaEncontrada = await this.findOne(id)
+    let origem = updateRotaDto.origem ?? rotaEncontrada.origem;
+    let destino = updateRotaDto.destino ?? rotaEncontrada.destino;
+  
+    if (updateRotaDto.origem || updateRotaDto.destino) {
+      const distanciaInfo = await this.distanceService.calcularDistancia(origem, destino);
+      rotaEncontrada.distanciaKm = distanciaInfo.distancia_km;
+      rotaEncontrada.duracao = distanciaInfo.duracao;
+    }
     Object.assign(rotaEncontrada, updateRotaDto)
     const rotaAtualizada = await this.rotaRepository.save(rotaEncontrada)
     return {
