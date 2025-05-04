@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { statusCaminhao } from "../enum/statusCaminho.enum";
+import { RemessaEntity } from "src/remessas/entities/remessa.entity";
 
 @Entity('caminhoes')
 export class CaminhaoEntity {
@@ -26,4 +27,7 @@ export class CaminhaoEntity {
 
     @Column()
     idMotorista:string
+
+    @OneToMany(()=> RemessaEntity, (remessa)=>remessa.caminhao)
+    remessas: RemessaEntity[]
 }

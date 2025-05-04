@@ -90,4 +90,10 @@ export class RotasService {
       throw new NotFoundException('Rota não encontrada ou já foi excluída.');
     }
   }
+
+  async atribuirCaminhao(id: string){
+    
+  }
+
+  
 }

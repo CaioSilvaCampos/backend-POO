@@ -9,6 +9,7 @@ import { DistanceService } from '../rotas/createDistance.service';
 @Module({
   imports:[TypeOrmModule.forFeature([RemessaEntity]),RotasModule],
   controllers: [RemessasController],
-  providers: [RemessasService, DistanceService ],
+  providers: [RemessasService,  ],
+  exports:[RemessasService]
 })
 export class RemessasModule {}

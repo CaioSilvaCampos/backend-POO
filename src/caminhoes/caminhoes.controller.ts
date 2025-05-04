@@ -5,7 +5,7 @@ import { UpdateCaminhoeDto } from './dto/update-caminhoe.dto';
 
 @Controller('caminhoes')
 export class CaminhoesController {
-  constructor(private readonly caminhoesService: CaminhoesService) {}
+  constructor(private readonly caminhoesService: CaminhoesService ) {}
 
   @Post()
   create(@Body() createCaminhoesDto: CreateCaminhoesDto) {
