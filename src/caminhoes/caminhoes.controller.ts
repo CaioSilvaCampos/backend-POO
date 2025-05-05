@@ -24,6 +24,9 @@ export class CaminhoesController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCaminhoeDto: UpdateCaminhoeDto) {
+    if (Object.keys(updateCaminhoeDto).length === 0) {
+      throw new BadRequestException('É necessário informar ao menos um campo para atualização.');
+    }
     return this.caminhoesService.update(id, updateCaminhoeDto);
   }
 
