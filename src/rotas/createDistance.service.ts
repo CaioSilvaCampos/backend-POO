@@ -12,7 +12,6 @@ export class DistanceService {
    }
     this.apiKey = key;
   }
-  //private readonly apiKey = 'kBmzQ8FsKgr9G7H0mrE9rmqd9WC1CMf1akQrIUFnr0hGwhjDE9QfWQFiDpPdUZRp';
   async calcularDistancia(origem: string, destino: string) {
     console.log(this.apiKey)
     const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${encodeURIComponent(origem)}&destinations=${encodeURIComponent(destino)}&key=${this.apiKey}`;
