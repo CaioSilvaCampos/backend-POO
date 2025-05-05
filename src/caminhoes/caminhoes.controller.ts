@@ -19,16 +19,16 @@ export class CaminhoesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.caminhoesService.findOne(+id);
+    return this.caminhoesService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCaminhoeDto: UpdateCaminhoeDto) {
-    return this.caminhoesService.update(+id, updateCaminhoeDto);
+    return this.caminhoesService.update(id, updateCaminhoeDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.caminhoesService.remove(+id);
+    return this.caminhoesService.remove(id);
   }
 }

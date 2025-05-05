@@ -4,7 +4,6 @@ import { UpdateCaminhoeDto } from './dto/update-caminhoe.dto';
 import { CaminhaoEntity } from './entities/caminhoes.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RemessasService } from 'src/remessas/remessas.service';
 import { listaCaminhaoDTO } from './dto/lista-caminhao.dto';
 
 @Injectable()
@@ -12,7 +11,18 @@ export class CaminhoesService {
   constructor(
     @InjectRepository(CaminhaoEntity)
     private readonly caminhaoRepository: Repository<CaminhaoEntity>){}
-  async create(createCaminhoesDto: CreateCaminhoesDto) { 
+  
+    async caminhaoExists(id:string){
+      const caminhao = await this.caminhaoRepository.findOneBy({id})
+      if(!caminhao){
+        throw new NotFoundException('Esse caminhao nao existe')
+      }
+      else{
+        return caminhao
+      }
+    }
+
+    async create(createCaminhoesDto: CreateCaminhoesDto) { 
     const caminhao = new CaminhaoEntity()
     caminhao.capacidade = createCaminhoesDto.capacidade
     caminhao.placa = createCaminhoesDto.placa
@@ -21,12 +31,13 @@ export class CaminhoesService {
     caminhao.cor = createCaminhoesDto.cor
     caminhao.marca = createCaminhoesDto.marca
     caminhao.modelo = createCaminhoesDto.modelo
+    caminhao.capacidadeDisponivel = caminhao.capacidade
 
     const caminhaoCriado = await this.caminhaoRepository.save(caminhao)
     return caminhaoCriado
   }
 
-  async findAll(): Promise<listaCaminhaoDTO[]> {
+  async findAll() {
     const caminhoes = await this.caminhaoRepository.find({
       relations: {
         remessas: true,
@@ -37,21 +48,7 @@ export class CaminhoesService {
       throw new NotFoundException('Não existem caminhões cadastrados!');
     }
   
-    return caminhoes.map((caminhao) => ({
-      id: caminhao.id,
-      placa: caminhao.placa,
-      capacidade: caminhao.capacidade,
-      modelo: caminhao.modelo,
-      marca: caminhao.marca,
-      status: caminhao.status,
-      cor: caminhao.cor,
-      idMotorista: caminhao.idMotorista || null,
-      remessa: caminhao.remessas.map((remessa) => ({
-        id: remessa.id,
-        descricao: remessa.descricao,
-        peso: remessa.peso,
-      })),
-    }));
+    return caminhoes
   }
 
   async findOne(id: string): Promise<listaCaminhaoDTO> {
@@ -72,6 +69,7 @@ export class CaminhoesService {
       marca: caminhao.marca,
       status: caminhao.status,
       cor: caminhao.cor,
+      capacidadeDisponivel: caminhao.capacidadeDisponivel,
       idMotorista: caminhao.idMotorista,
       remessa: caminhao.remessas.map((remessa) => ({
         id: remessa.id,
@@ -81,9 +79,13 @@ export class CaminhoesService {
     };
   }
 
-  update(id: number, updateCaminhoeDto: UpdateCaminhoeDto) {
-    return `This action updates a #${id} caminhoe`;
-  }
+  async update(id: string, updateCaminhoeDto: UpdateCaminhoeDto) {
+    const caminhaoEncontrado = await this.caminhaoExists(id)
+    Object.assign(caminhaoEncontrado, updateCaminhoeDto)
+    const caminhaoAtualizado = await this.caminhaoRepository.save(caminhaoEncontrado);
+
+    return caminhaoAtualizado;
+}
 
   async remove(id: string) {
     const caminhao = await this.findOne(id); 

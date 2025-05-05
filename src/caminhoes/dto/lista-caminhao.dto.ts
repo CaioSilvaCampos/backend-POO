@@ -14,6 +14,7 @@ export class listaCaminhaoDTO{
     marca:string;
     status:statusCaminhao;
     cor:string
+    capacidadeDisponivel:number;
     idMotorista:string | null;
     remessa: listaRemessaSimplesDTO[]
 }

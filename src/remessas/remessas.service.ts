@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRemessaDto } from './dto/create-remessa.dto';
 import { UpdateRemessaDto } from './dto/update-remessa.dto';
 import { RemessaEntity } from './entities/remessa.entity';
@@ -6,14 +6,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RotasService } from 'src/rotas/rotas.service';
 import { RemessaRespostaDto } from './dto/lista-remessa.dto';
-import { stringify } from 'querystring';
+import { CaminhaoEntity } from 'src/caminhoes/entities/caminhoes.entity';
 
 @Injectable()
 export class RemessasService {
   constructor(
     @InjectRepository(RemessaEntity)
         private readonly remessaRepository: Repository<RemessaEntity>,
-        private readonly rotaService: RotasService
+    @InjectRepository(CaminhaoEntity)
+        private readonly caminhaoRepository: Repository<CaminhaoEntity>,
+        private readonly rotaService: RotasService,
   ){
 
   }
@@ -25,13 +27,22 @@ export class RemessasService {
     remessa.status = createRemessaDto.status
     remessa.prioridade = createRemessaDto.prioridade
     remessa.rota = rota
+    if(rota.caminhao?.id){
+      const podeAtribuir = await this.rotaService.verificarCapacidadeCaminhao(rota.id, rota.caminhao.id, createRemessaDto.peso)
+      if(!podeAtribuir){
+        throw new BadRequestException('Essa carga excede a capacidade do caminhao!')
+      }
+      rota.caminhao.remessas = rota.remessas
+      rota.caminhao.capacidadeDisponivel -= createRemessaDto.peso
+      await this.caminhaoRepository.save(rota.caminhao)
+    }
     remessa.peso = createRemessaDto.peso
     remessa.tipo = createRemessaDto.tipo
     await this.remessaRepository.save(remessa)
     return {
       message: 'Remessa criada com sucesso',
       remessa
-    }
+  }
   }
 
   async findAll(): Promise<RemessaRespostaDto[]> {
@@ -100,6 +111,22 @@ export class RemessasService {
     const remessaEncontrada = await this.remessaExists(id)
     if(updateRemessaDto.idRota){
       await this.rotaService.findOne(updateRemessaDto.idRota)
+    }
+    if (updateRemessaDto.peso) {
+      const idRota = updateRemessaDto.idRota ?? remessaEncontrada.rota.id;
+      const rota = await this.rotaService.findOne(idRota);
+      if (rota.caminhao) {
+        const podeAtualizar = await this.rotaService.verificarCapacidadeCaminhao(
+          idRota,
+          rota.caminhao.id,
+          updateRemessaDto.peso 
+        );
+  
+        if (!podeAtualizar) {
+          throw new BadRequestException('Essa atualização excede a capacidade do caminhão!');
+        }
+        rota.caminhao.capacidadeDisponivel -= updateRemessaDto.peso
+      }
     }
     Object.assign(remessaEncontrada, updateRemessaDto)
       const remessaAtualizada = await this.remessaRepository.save(remessaEncontrada)

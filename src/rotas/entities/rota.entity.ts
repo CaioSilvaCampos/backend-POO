@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { StatusRota } from "../enum/statusRota.enum";
 import { RemessaEntity } from "src/remessas/entities/remessa.entity";
+import { CaminhaoEntity } from "src/caminhoes/entities/caminhoes.entity";
 
 @Entity('rotas')
 export class RotaEntity {
@@ -22,9 +23,9 @@ export class RotaEntity {
     @Column({nullable:true})
     duracao:string;
 
-    @Column({nullable:true})
-    idCaminhao: string
+    @ManyToOne(()=> CaminhaoEntity, caminhao=> caminhao.rotas, {nullable:true})
+    caminhao: CaminhaoEntity | null
 
-    @OneToMany(()=> RemessaEntity, remessa=> remessa.rota)
+    @OneToMany(()=> RemessaEntity, remessa=> remessa.rota, {eager:true})
     remessas: RemessaEntity[]
 }
