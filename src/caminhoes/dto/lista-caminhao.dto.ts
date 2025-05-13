@@ -1,3 +1,4 @@
+import { MotoristaEntity } from "src/motoristas/entities/motorista.entity";
 import { statusCaminhao } from "../enum/statusCaminho.enum";
 
 export class listaRemessaSimplesDTO{
@@ -15,6 +16,6 @@ export class listaCaminhaoDTO{
     status:statusCaminhao;
     cor:string
     capacidadeDisponivel:number;
-    idMotorista:string | null;
+    motorista: MotoristaEntity | null;
     remessa: listaRemessaSimplesDTO[]
 }

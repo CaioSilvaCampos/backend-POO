@@ -1,16 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCaminhoesDto } from './dto/create-caminhoe.dto';
 import { UpdateCaminhoeDto } from './dto/update-caminhoe.dto';
 import { CaminhaoEntity } from './entities/caminhoes.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { listaCaminhaoDTO } from './dto/lista-caminhao.dto';
+import { MotoristasService } from 'src/motoristas/motoristas.service';
+import { StatusMotorista } from 'src/motoristas/enum/statusMotorista.enum';
+import { MotoristaEntity } from 'src/motoristas/entities/motorista.entity';
+import { statusCaminhao } from './enum/statusCaminho.enum';
 
 @Injectable()
 export class CaminhoesService {
   constructor(
     @InjectRepository(CaminhaoEntity)
-    private readonly caminhaoRepository: Repository<CaminhaoEntity>){}
+    private readonly caminhaoRepository: Repository<CaminhaoEntity>,
+    @Inject(forwardRef(()=>MotoristasService))
+    private readonly motoristaService:MotoristasService,
+    @InjectRepository(MotoristaEntity)
+    private readonly motoristaRepository: Repository<MotoristaEntity>,
+  ){}
   
     async caminhaoExists(id:string){
       const caminhao = await this.caminhaoRepository.findOneBy({id})
@@ -22,12 +31,29 @@ export class CaminhoesService {
       }
     }
 
+    async caminhaoExistsByPlaca(placa:string){
+      const caminhao = await this.caminhaoRepository.findOneBy({placa})
+      if(caminhao){
+        throw new BadRequestException("Já existe um caminhão cadastrado com essa placa!")
+      }
+    }
+
     async create(createCaminhoesDto: CreateCaminhoesDto) { 
     const caminhao = new CaminhaoEntity()
+    if(createCaminhoesDto.idMotorista){
+      const motorista = await this.motoristaService.findOne(createCaminhoesDto.idMotorista)
+      await this.motoristaService.motoristaDisponivel(motorista.id)
+      caminhao.motorista = motorista
+      motorista.statusMotorista = StatusMotorista.INDISPONIVEL
+      await this.motoristaRepository.save(motorista)
+    }
+    else{
+      caminhao.motorista = null
+    }
+    await this.caminhaoExistsByPlaca(createCaminhoesDto.placa)
     caminhao.capacidade = createCaminhoesDto.capacidade
     caminhao.placa = createCaminhoesDto.placa
     caminhao.status = createCaminhoesDto.status
-    caminhao.idMotorista ? createCaminhoesDto.idMotorista : null
     caminhao.cor = createCaminhoesDto.cor
     caminhao.marca = createCaminhoesDto.marca
     caminhao.modelo = createCaminhoesDto.modelo
@@ -41,6 +67,7 @@ export class CaminhoesService {
     const caminhoes = await this.caminhaoRepository.find({
       relations: {
         remessas: true,
+        motorista:true
       },
     });
   
@@ -54,12 +81,14 @@ export class CaminhoesService {
   async findOne(id: string): Promise<listaCaminhaoDTO> {
     const caminhao = await this.caminhaoRepository.findOne({
       where: { id },
-      relations: { remessas: true },
+      relations: { remessas: true, motorista:true },
     });
   
     if (!caminhao) {
       throw new NotFoundException('Esse caminhão não existe no nosso banco de dados!');
     }
+
+
   
     return {
       id: caminhao.id,
@@ -70,7 +99,7 @@ export class CaminhoesService {
       status: caminhao.status,
       cor: caminhao.cor,
       capacidadeDisponivel: caminhao.capacidadeDisponivel,
-      idMotorista: caminhao.idMotorista,
+      motorista: caminhao.motorista || null,
       remessa: caminhao.remessas.map((remessa) => ({
         id: remessa.id,
         descricao: remessa.descricao,
@@ -81,10 +110,21 @@ export class CaminhoesService {
 
   async update(id: string, updateCaminhoeDto: UpdateCaminhoeDto) {
     const caminhaoEncontrado = await this.caminhaoExists(id)
-    Object.assign(caminhaoEncontrado, updateCaminhoeDto)
-    const caminhaoAtualizado = await this.caminhaoRepository.save(caminhaoEncontrado);
-
-    return caminhaoAtualizado;
+    if(updateCaminhoeDto.idMotorista){
+      const motorista = await this.motoristaService.findOne(updateCaminhoeDto.idMotorista)
+      await this.motoristaService.motoristaDisponivel(motorista.id)
+      motorista.statusMotorista = StatusMotorista.INDISPONIVEL
+      await this.motoristaRepository.save(motorista)
+      caminhaoEncontrado.motorista = motorista
+    }
+    for (const [key, value] of Object.entries(updateCaminhoeDto)) {
+    if (value !== undefined) {
+      caminhaoEncontrado[key] = value;
+    }
+  }
+  const caminhaoAtualizado = await this.caminhaoRepository.save(caminhaoEncontrado);
+  console.log(caminhaoAtualizado.motorista)
+  return caminhaoAtualizado;
 }
 
   async remove(id: string) {
@@ -101,5 +141,32 @@ export class CaminhoesService {
       throw new NotFoundException('Caminhao não encontrado ou já foi excluído.');
     }
   }
+
+  async atualizarCapacidadeDisponivel(caminhaoId: string) {
+    const caminhao = await this.caminhaoRepository.findOne({
+      where: { id: caminhaoId },
+      relations: { remessas: true },
+    });
+
+    if (!caminhao) {
+      throw new NotFoundException('Caminhão não encontrado.');
+    }
+
+    const pesoOcupado = caminhao.remessas.reduce((total, remessa) => total + remessa.peso, 0);
+    caminhao.capacidadeDisponivel = caminhao.capacidade - pesoOcupado;
+
+    return this.caminhaoRepository.save(caminhao);
+  }
+
+  async verificarDisponibilidadeCaminhao(id:string): Promise<boolean>{
+    const caminhao = await this.caminhaoRepository.findOneBy({id:id})
+    if(caminhao?.status == statusCaminhao.DISPONIVEL){
+      return true
+    }
+    else{
+      throw new BadRequestException('Esse caminhão está indisponivel!')
+    }
+  }
+  
   }
 

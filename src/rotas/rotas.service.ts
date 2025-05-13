@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { DistanceService } from 'src/rotas/createDistance.service';
 import { CaminhoesService } from 'src/caminhoes/caminhoes.service';
 import { CaminhaoEntity } from 'src/caminhoes/entities/caminhoes.entity';
+import { statusCaminhao } from 'src/caminhoes/enum/statusCaminho.enum';
 
 @Injectable()
 export class RotasService {
@@ -25,6 +26,8 @@ export class RotasService {
     if(createRotaDto.idCaminhao){
       const caminhao = await this.caminhaoService.caminhaoExists(createRotaDto.idCaminhao)
       rota.caminhao = caminhao
+      caminhao.status = statusCaminhao.INDISPONIVEL
+      await this.caminhaoRepository.save(caminhao)
     }
     else{
       rota.caminhao = null
@@ -89,7 +92,32 @@ export class RotasService {
       rotaEncontrada.duracao = distanciaInfo.duracao;
     }
 
-    if(updateRotaDto.idCaminhao){
+    if(updateRotaDto.idCaminhao !== rotaEncontrada.caminhao?.id && updateRotaDto.idCaminhao){
+      if(rotaEncontrada.caminhao){
+          rotaEncontrada.caminhao.status = statusCaminhao.DISPONIVEL
+          await this.caminhaoRepository.save(rotaEncontrada.caminhao)
+        }
+      const caminhao = await this.caminhaoService.caminhaoExists(updateRotaDto.idCaminhao)
+      await this.caminhaoService.verificarDisponibilidadeCaminhao(caminhao.id)
+      const podeAtribuir = await this.verificarCapacidadeCaminhao(id, updateRotaDto.idCaminhao)
+      if(!podeAtribuir){
+        throw new BadRequestException('Esse caminhão não suporta a carga que está atribuida a essa rota!')
+      }
+      await this.caminhaoService.verificarDisponibilidadeCaminhao(caminhao.id)
+      rotaEncontrada.caminhao = caminhao
+      caminhao.remessas = rotaEncontrada.remessas
+      caminhao.capacidadeDisponivel = caminhao.capacidade - rotaEncontrada.remessas.reduce((soma, remessa) => soma + Number(remessa.peso), 0)
+      caminhao.status = statusCaminhao.INDISPONIVEL
+      await this.caminhaoRepository.save(caminhao)
+      }
+    else if(updateRotaDto.idCaminhao == null){
+        if(rotaEncontrada.caminhao){
+          rotaEncontrada.caminhao.status = statusCaminhao.DISPONIVEL
+          await this.caminhaoRepository.save(rotaEncontrada.caminhao)
+        }
+        rotaEncontrada.caminhao = null
+      }
+    else if(updateRotaDto.idCaminhao && rotaEncontrada.caminhao == null){
       const caminhao = await this.caminhaoService.caminhaoExists(updateRotaDto.idCaminhao)
       const podeAtribuir = await this.verificarCapacidadeCaminhao(id, updateRotaDto.idCaminhao)
       if(!podeAtribuir){
@@ -98,12 +126,9 @@ export class RotasService {
       rotaEncontrada.caminhao = caminhao
       caminhao.remessas = rotaEncontrada.remessas
       caminhao.capacidadeDisponivel = caminhao.capacidade - rotaEncontrada.remessas.reduce((soma, remessa) => soma + Number(remessa.peso), 0)
+      caminhao.status = statusCaminhao.INDISPONIVEL
       await this.caminhaoRepository.save(caminhao)
-      }
-      else if(updateRotaDto.idCaminhao == null){
-        rotaEncontrada.caminhao = null
-      }
-      
+    }
     Object.assign(rotaEncontrada, updateRotaDto)
     const rotaAtualizada = await this.rotaRepository.save(rotaEncontrada)
     return {

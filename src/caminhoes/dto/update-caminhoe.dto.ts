@@ -1,23 +1,37 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateCaminhoesDto } from './create-caminhoe.dto';
+
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { statusCaminhao } from '../enum/statusCaminho.enum';
 
 export class UpdateCaminhoeDto {
-    @IsOptional()
-    @IsString()
-    cor?: string;
+   @IsOptional()
+  @IsString()
+  placa?: string;
 
-    @IsOptional()
-    @IsEnum(statusCaminhao)
-    status?: statusCaminhao;
+  @IsOptional()
+  @IsString()
+  modelo?: string;
 
-    @IsOptional()
-    @IsString()
-    idMotorista?: string;  
+  @IsOptional()
+  @IsString()
+  marca?: string;
 
-    
-    @IsOptional()
-    @IsNumber()
-    capacidadeDisponivel?:number
+  @IsOptional()
+  @IsNumber()
+  capacidade?: number;
+
+  @IsOptional()
+  @IsString()
+  cor?: string;
+
+  @IsOptional()
+  @IsEnum(statusCaminhao)
+  status?: statusCaminhao;
+
+  @IsOptional()
+  @IsString()
+  idMotorista?: string;
+
+  @IsOptional()
+  @IsNumber()
+  capacidadeDisponivel?: number;
 }

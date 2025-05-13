@@ -1,7 +1,10 @@
+import { CaminhaoEntity } from "src/caminhoes/entities/caminhoes.entity";
+
 export class RotaSimplesDto {
     origem: string;
     destino: string;
     duracao: string;
+    caminhao?: CaminhaoEntity | null
 }
 
 export class RemessaRespostaDto {

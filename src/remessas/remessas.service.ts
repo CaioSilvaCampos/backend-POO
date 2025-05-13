@@ -102,7 +102,8 @@ export class RemessasService {
       rota: {
         origem: remessa.rota.origem,
         destino: remessa.rota.destino,
-        duracao: remessa.rota.duracao
+        duracao: remessa.rota.duracao,
+        caminhao: remessa.rota.caminhao
       },
     };
   }
@@ -110,7 +111,8 @@ export class RemessasService {
   async update(id: string, updateRemessaDto: UpdateRemessaDto) {
     const remessaEncontrada = await this.remessaExists(id)
     if(updateRemessaDto.idRota){
-      await this.rotaService.findOne(updateRemessaDto.idRota)
+      const novaRota = await this.rotaService.findOne(updateRemessaDto.idRota)
+      remessaEncontrada.rota = novaRota
     }
     if (updateRemessaDto.peso) {
       const idRota = updateRemessaDto.idRota ?? remessaEncontrada.rota.id;
@@ -130,6 +132,8 @@ export class RemessasService {
     }
     Object.assign(remessaEncontrada, updateRemessaDto)
       const remessaAtualizada = await this.remessaRepository.save(remessaEncontrada)
+      
+      
       return {
         message:'Remessa atualizada com sucesso',
         remessaAtualizada
@@ -139,13 +143,17 @@ export class RemessasService {
   async remove(id: string) {
     const remessaEncontrada = await this.findOne(id)
     const result = await this.remessaRepository.delete(id);
-  
     if (result.affected && result.affected > 0) {
-      return {
-        mensagem: 'Remessa excluída com sucesso',
-        remessa:remessaEncontrada
-      };
-    } else {
+        if (remessaEncontrada.rota?.caminhao) {
+          const caminhao = remessaEncontrada.rota.caminhao
+          caminhao.capacidadeDisponivel += remessaEncontrada.peso
+          await this.caminhaoRepository.save(caminhao)
+        }
+        return {
+          mensagem: 'Remessa excluída com sucesso',
+          remessa:remessaEncontrada
+        };
+    }else {
       throw new NotFoundException('Não foi possivel excluir a rota.');
     }
   }

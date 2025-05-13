@@ -8,6 +8,7 @@ import { RotasModule } from './rotas/rotas.module';
 import { RemessasModule } from './remessas/remessas.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CaminhoesModule } from './caminhoes/caminhoes.module';
+import { MotoristasModule } from './motoristas/motoristas.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -20,7 +21,8 @@ import { CaminhoesModule } from './caminhoes/caminhoes.module';
  RotasModule,
  RemessasModule,
  CacheModule.register({isGlobal:true, ttl:10000}),
- CaminhoesModule
+ CaminhoesModule,
+ MotoristasModule
 ],
   controllers: [AppController],
   providers: [AppService],

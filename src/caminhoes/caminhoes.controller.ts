@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
 import { CaminhoesService } from './caminhoes.service';
 import { CreateCaminhoesDto } from './dto/create-caminhoe.dto';
 import { UpdateCaminhoeDto } from './dto/update-caminhoe.dto';
