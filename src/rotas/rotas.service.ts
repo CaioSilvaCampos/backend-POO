@@ -4,7 +4,7 @@ import { UpdateRotaDto } from './dto/update-rota.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RotaEntity } from './entities/rota.entity';
 import { Repository } from 'typeorm';
-import { DistanceService } from 'src/rotas/createDistance.service';
+import { DistanceService } from 'src/external/distance/distance.service';
 import { CaminhoesService } from 'src/caminhoes/caminhoes.service';
 import { CaminhaoEntity } from 'src/caminhoes/entities/caminhoes.entity';
 import { statusCaminhao } from 'src/caminhoes/enum/statusCaminho.enum';
