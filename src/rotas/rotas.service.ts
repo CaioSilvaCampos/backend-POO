@@ -8,6 +8,7 @@ import { DistanceService } from 'src/external/distance/distance.service';
 import { CaminhoesService } from 'src/caminhoes/caminhoes.service';
 import { CaminhaoEntity } from 'src/caminhoes/entities/caminhoes.entity';
 import { statusCaminhao } from 'src/caminhoes/enum/statusCaminho.enum';
+import { CoordinatesService } from 'src/external/coordinates/coordinates.service';
 
 @Injectable()
 export class RotasService {
@@ -18,6 +19,7 @@ export class RotasService {
     private readonly caminhaoRepository: Repository<CaminhaoEntity>,
     private readonly distanceService: DistanceService,
     private readonly caminhaoService: CaminhoesService,
+    private readonly coordinatesService: CoordinatesService
   ){
 
   }
@@ -33,14 +35,20 @@ export class RotasService {
       rota.caminhao = null
     }
   
+    const coordenadasOrigem = await this.coordinatesService.getCoordinates(createRotaDto.origem)
+    const coordenadasDestino = await this.coordinatesService.getCoordinates(createRotaDto.destino)
     const distanciaInfo = await this.distanceService.calcularDistancia(createRotaDto.origem, createRotaDto.destino);
-
+    
     rota.destino = createRotaDto.destino
     rota.origem = createRotaDto.origem
     rota.status = createRotaDto.status
     rota.distanciaKm = distanciaInfo.distancia_km
     rota.duracao = distanciaInfo.duracao
-    //rota.distanciaKm = createRotaDto.distanciaKm
+    rota.origem_lat = coordenadasOrigem.lat
+    rota.origem_lng = coordenadasOrigem.lng
+    rota.destino_lat = coordenadasDestino.lat
+    rota.destino_lng = coordenadasDestino.lng
+    
     
     
 
@@ -87,9 +95,15 @@ export class RotasService {
     let destino = updateRotaDto.destino ?? rotaEncontrada.destino;
   
     if (updateRotaDto.origem || updateRotaDto.destino) {
+      const origemCoordenadas = await this.coordinatesService.getCoordinates(origem)
+      const destinoCoordenadas = await this.coordinatesService.getCoordinates(destino)
       const distanciaInfo = await this.distanceService.calcularDistancia(origem, destino);
       rotaEncontrada.distanciaKm = distanciaInfo.distancia_km;
-      rotaEncontrada.duracao = distanciaInfo.duracao;
+      rotaEncontrada.duracao = distanciaInfo.duracao
+      rotaEncontrada.origem_lat = origemCoordenadas.lat
+      rotaEncontrada.origem_lng = origemCoordenadas.lng
+      rotaEncontrada.destino_lat = destinoCoordenadas.lat
+      rotaEncontrada.destino_lng = destinoCoordenadas.lng
     }
 
     if(updateRotaDto.idCaminhao !== rotaEncontrada.caminhao?.id && updateRotaDto.idCaminhao){

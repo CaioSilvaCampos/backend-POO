@@ -3,14 +3,13 @@ import { RotasService } from './rotas.service';
 import { RotasController } from './rotas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RotaEntity } from './entities/rota.entity';
-import { DistanceService } from 'src/external/distance/distance.service';
-import { CaminhoesService } from 'src/caminhoes/caminhoes.service';
 import { CaminhoesModule } from 'src/caminhoes/caminhoes.module';
 import { CaminhaoEntity } from 'src/caminhoes/entities/caminhoes.entity';
 import { DistanceModule } from 'src/external/distance/distance.module';
+import { CoordinatesModule } from 'src/external/coordinates/coordinates.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([RotaEntity, CaminhaoEntity]), CaminhoesModule, DistanceModule],
+  imports:[TypeOrmModule.forFeature([RotaEntity, CaminhaoEntity]), CaminhoesModule, DistanceModule, CoordinatesModule],
   controllers: [RotasController],
   providers: [RotasService],
   exports:[RotasService]

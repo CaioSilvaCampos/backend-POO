@@ -11,8 +11,20 @@ export class RotaEntity {
     @Column({nullable:false})
     origem: string;
 
+    @Column({ nullable: false, name: 'origem_latitude', type: 'decimal', precision: 10, scale: 6 })
+    origem_lat: number;
+
+    @Column({ nullable: false, name: 'origem_longitude', type: 'decimal', precision: 10, scale: 6 })
+    origem_lng: number;
+
     @Column({nullable:false})
     destino: string;
+
+    @Column({ nullable: false, name: 'destino_latitude', type: 'decimal', precision: 10, scale: 6 })
+    destino_lat: number;
+
+    @Column({ nullable: false, name: 'destino_longitude', type: 'decimal', precision: 10, scale: 6 })
+    destino_lng: number;
 
     @Column({nullable:false})
     distanciaKm: string;

@@ -13,12 +13,11 @@ export class DistanceService {
     this.apiKey = key;
   }
   async calcularDistancia(origem: string, destino: string) {
-    console.log(this.apiKey)
+    
     const url = `https://api.distancematrix.ai/maps/api/distancematrix/json?origins=${encodeURIComponent(origem)}&destinations=${encodeURIComponent(destino)}&key=${this.apiKey}`;
 
     const { data } = await axios.get(url);
     
-    console.log(data)
 
     if (data.status !== 'OK' || data.rows[0].elements[0].status !== 'OK') {
       throw new Error('Não foi possível calcular a distância');
@@ -28,5 +27,6 @@ export class DistanceService {
       distancia_km: data.rows[0].elements[0].distance.text,
       duracao: data.rows[0].elements[0].duration.text,
     };
+
   }
 }
