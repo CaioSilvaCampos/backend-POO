@@ -6,9 +6,10 @@ import { CaminhaoEntity } from './entities/caminhoes.entity';
 import { MotoristasService } from 'src/motoristas/motoristas.service';
 import { MotoristasModule } from 'src/motoristas/motoristas.module';
 import { MotoristaEntity } from 'src/motoristas/entities/motorista.entity';
+import { RemessaEntity } from 'src/remessas/entities/remessa.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([CaminhaoEntity,MotoristaEntity]), forwardRef(()=> MotoristasModule)],
+  imports:[TypeOrmModule.forFeature([CaminhaoEntity,MotoristaEntity, RemessaEntity]), forwardRef(()=> MotoristasModule)],
   controllers: [CaminhoesController],
   providers: [CaminhoesService],
   exports:[CaminhoesService]

@@ -9,6 +9,7 @@ import { MotoristasService } from 'src/motoristas/motoristas.service';
 import { StatusMotorista } from 'src/motoristas/enum/statusMotorista.enum';
 import { MotoristaEntity } from 'src/motoristas/entities/motorista.entity';
 import { statusCaminhao } from './enum/statusCaminho.enum';
+import { RemessaEntity } from 'src/remessas/entities/remessa.entity';
 
 @Injectable()
 export class CaminhoesService {
@@ -19,6 +20,8 @@ export class CaminhoesService {
     private readonly motoristaService:MotoristasService,
     @InjectRepository(MotoristaEntity)
     private readonly motoristaRepository: Repository<MotoristaEntity>,
+    @InjectRepository(RemessaEntity)
+    private readonly remessaRepository: Repository<RemessaEntity>,
   ){}
   
     async caminhaoExists(id:string){
@@ -158,6 +161,25 @@ export class CaminhoesService {
     return this.caminhaoRepository.save(caminhao);
   }
 
+  async aumentarCapacidadeDisponivel(caminhaoId: string, remessaId: string) {
+    const remessa = await this.remessaRepository.findOneBy({id:remessaId})
+    if(!remessa){
+      throw new NotFoundException("Essa remessa não existe")
+    }
+    const caminhao = await this.caminhaoRepository.findOne({
+      where: { id: caminhaoId },
+      relations: { remessas: true },
+    });
+
+    if (!caminhao) {
+      throw new NotFoundException('Caminhão não encontrado.');
+    }
+    const novaCapacidade = Number(caminhao.capacidadeDisponivel) + Number(remessa.peso);
+    caminhao.capacidadeDisponivel = novaCapacidade
+
+    return this.caminhaoRepository.save(caminhao);
+  }
+
   async verificarDisponibilidadeCaminhao(id:string): Promise<boolean>{
     const caminhao = await this.caminhaoRepository.findOneBy({id:id})
     if(caminhao?.status == statusCaminhao.DISPONIVEL){
@@ -166,6 +188,14 @@ export class CaminhoesService {
     else{
       throw new BadRequestException('Esse caminhão está indisponivel!')
     }
+  }
+
+  async verificarCapacidadeAtualização(id:string, deltaPeso: number){
+    const caminhao = await this.caminhaoExists(id);
+
+      if (deltaPeso <= 0) return true;
+
+    return caminhao.capacidadeDisponivel >= deltaPeso;
   }
   
   }

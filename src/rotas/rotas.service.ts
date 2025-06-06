@@ -37,8 +37,8 @@ export class RotasService {
   
     const coordenadasOrigem = await this.coordinatesService.getCoordinates(createRotaDto.origem)
     const coordenadasDestino = await this.coordinatesService.getCoordinates(createRotaDto.destino)
-    const distanciaInfo = await this.distanceService.calcularDistancia(createRotaDto.origem, createRotaDto.destino);
-    
+    const distanciaInfo = await this.distanceService.calcularDistancia(createRotaDto.origem, createRotaDto.destino);  
+
     rota.destino = createRotaDto.destino
     rota.origem = createRotaDto.origem
     rota.status = createRotaDto.status
@@ -190,9 +190,6 @@ export class RotasService {
   
     return pesoTotal <= caminhao.capacidade;
   }
-  
-
-  
 
   
 }

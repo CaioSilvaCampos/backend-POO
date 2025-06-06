@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { RotasService } from 'src/rotas/rotas.service';
 import { RemessaRespostaDto } from './dto/lista-remessa.dto';
 import { CaminhaoEntity } from 'src/caminhoes/entities/caminhoes.entity';
+import { CaminhoesService } from 'src/caminhoes/caminhoes.service';
 
 @Injectable()
 export class RemessasService {
@@ -16,6 +17,7 @@ export class RemessasService {
     @InjectRepository(CaminhaoEntity)
         private readonly caminhaoRepository: Repository<CaminhaoEntity>,
         private readonly rotaService: RotasService,
+        private readonly caminhaoService: CaminhoesService
   ){
 
   }
@@ -38,11 +40,18 @@ export class RemessasService {
     }
     remessa.peso = createRemessaDto.peso
     remessa.tipo = createRemessaDto.tipo
-    await this.remessaRepository.save(remessa)
+    const remessaSalva = await this.remessaRepository.save(remessa)
+    if(remessaSalva.rota){
+        const rota = await this.rotaService.findOne(remessaSalva.rota.id)
+        for (const remessa of rota.remessas) {
+        remessa.status = remessaSalva.status;
+        await this.remessaRepository.save(remessa);
+      } 
+    }
     return {
       message: 'Remessa criada com sucesso',
       remessa
-  }
+  } 
   }
 
   async findAll(): Promise<RemessaRespostaDto[]> {
@@ -73,21 +82,23 @@ export class RemessasService {
     }
   }
 
-  async remessaExists(id:string){
-    const remessa = await this.remessaRepository.findOne({where:{
-      id:id
-    },
-    relations:{
-      rota:true
+    async remessaExists(id:string){
+      const remessa = await this.remessaRepository.findOne({where:{
+        id:id
+      },
+      relations:{
+        rota:{
+            caminhao:true
+        }
+      }
+    })
+      if(remessa == null){
+        throw new NotFoundException('Essa remessa não esta cadastrada no nosso banco de dados!')
+      }
+      else{
+        return remessa
+      }
     }
-  })
-    if(remessa == null){
-      throw new NotFoundException('Essa remessa não esta cadastrada no nosso banco de dados!')
-    }
-    else{
-      return remessa
-    }
-  }
 
   async findOne(id: string): Promise<RemessaRespostaDto> {
     const remessa = await this.remessaExists(id)
@@ -118,21 +129,33 @@ export class RemessasService {
       const idRota = updateRemessaDto.idRota ?? remessaEncontrada.rota.id;
       const rota = await this.rotaService.findOne(idRota);
       if (rota.caminhao) {
-        const podeAtualizar = await this.rotaService.verificarCapacidadeCaminhao(
-          idRota,
+        const diferençaPeso = Number(updateRemessaDto.peso) - Number(remessaEncontrada.peso)
+        const podeAtualizar = await this.caminhaoService.verificarCapacidadeAtualização(
           rota.caminhao.id,
-          updateRemessaDto.peso 
+          diferençaPeso 
         );
   
         if (!podeAtualizar) {
           throw new BadRequestException('Essa atualização excede a capacidade do caminhão!');
         }
-        rota.caminhao.capacidadeDisponivel -= updateRemessaDto.peso
+        const pesoAntigo = Number(rota.caminhao.capacidadeDisponivel) + Number(remessaEncontrada.peso)
+        rota.caminhao.capacidadeDisponivel = pesoAntigo
+        await this.caminhaoRepository.save(rota.caminhao)
+
+        const pesoNovo = pesoAntigo - Number(updateRemessaDto.peso)
+        rota.caminhao.capacidadeDisponivel = pesoNovo
+        await this.caminhaoRepository.save(rota.caminhao)
       }
     }
     Object.assign(remessaEncontrada, updateRemessaDto)
-      const remessaAtualizada = await this.remessaRepository.save(remessaEncontrada)
-      
+    const remessaAtualizada = await this.remessaRepository.save(remessaEncontrada)
+      if(remessaAtualizada.rota){
+        const rota = await this.rotaService.findOne(remessaAtualizada.rota.id)
+        for (const remessa of rota.remessas) {
+        remessa.status = remessaAtualizada.status;
+        await this.remessaRepository.save(remessa);
+      }   
+      }
       
       return {
         message:'Remessa atualizada com sucesso',
@@ -142,13 +165,11 @@ export class RemessasService {
 
   async remove(id: string) {
     const remessaEncontrada = await this.findOne(id)
+    if (remessaEncontrada.rota?.caminhao) {
+      await this.caminhaoService.aumentarCapacidadeDisponivel(remessaEncontrada.rota.caminhao.id, remessaEncontrada.id)
+    }
     const result = await this.remessaRepository.delete(id);
     if (result.affected && result.affected > 0) {
-        if (remessaEncontrada.rota?.caminhao) {
-          const caminhao = remessaEncontrada.rota.caminhao
-          caminhao.capacidadeDisponivel += remessaEncontrada.peso
-          await this.caminhaoRepository.save(caminhao)
-        }
         return {
           mensagem: 'Remessa excluída com sucesso',
           remessa:remessaEncontrada

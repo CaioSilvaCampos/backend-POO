@@ -7,7 +7,6 @@ export class CoordinatesService {
 
   async getCoordinates(cityName: string): Promise<{ lat: number; lng: number }> {
     const url = `${this.baseUrl}?format=json&q=${encodeURIComponent(cityName + ', Brasil')}`;
-    console.log(url)
 
     const response = await axios.get(url, {
         timeout: 10000,
