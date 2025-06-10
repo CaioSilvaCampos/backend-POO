@@ -5,6 +5,7 @@ import { CaminhaoEntity } from "src/caminhoes/entities/caminhoes.entity";
 import { MotoristaEntity } from "src/motoristas/entities/motorista.entity";
 import { RemessaEntity } from "src/remessas/entities/remessa.entity";
 import { RotaEntity } from "src/rotas/entities/rota.entity";
+import { UsuarioEntity } from "src/usuarios/entities/usuario.entity";
 
 
 @Injectable()
@@ -19,7 +20,7 @@ export class PostgresConfigService implements TypeOrmOptionsFactory{
             username: this.configService.get<string>('DB_USERNAME'),
             password: this.configService.get<string>('DB_PASSWORD'),
             database: this.configService.get<string>('DB_NAME'),
-            entities:[CaminhaoEntity, RemessaEntity, RotaEntity, MotoristaEntity],
+            entities:[CaminhaoEntity, RemessaEntity, RotaEntity, MotoristaEntity, UsuarioEntity],
             synchronize: true
         }
     }

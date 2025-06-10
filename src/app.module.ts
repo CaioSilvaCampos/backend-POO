@@ -10,6 +10,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { CaminhoesModule } from './caminhoes/caminhoes.module';
 import { MotoristasModule } from './motoristas/motoristas.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -24,7 +25,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
  CacheModule.register({isGlobal:true, ttl:10000}),
  CaminhoesModule,
  MotoristasModule,
- DashboardModule
+ DashboardModule,
+ UsuariosModule
 ],
   controllers: [AppController],
   providers: [AppService],
