@@ -90,11 +90,12 @@ export class RotasService {
   }
 
   async update(id: string, updateRotaDto: UpdateRotaDto) {
+    console.log(updateRotaDto)
     const rotaEncontrada = await this.findOne(id)
     let origem = updateRotaDto.origem ?? rotaEncontrada.origem;
     let destino = updateRotaDto.destino ?? rotaEncontrada.destino;
   
-    if (updateRotaDto.origem || updateRotaDto.destino) {
+    if (updateRotaDto.origem != rotaEncontrada.origem || updateRotaDto.destino != rotaEncontrada.destino) {
       const origemCoordenadas = await this.coordinatesService.getCoordinates(origem)
       const destinoCoordenadas = await this.coordinatesService.getCoordinates(destino)
       const distanciaInfo = await this.distanceService.calcularDistancia(origem, destino);
@@ -105,8 +106,14 @@ export class RotasService {
       rotaEncontrada.destino_lat = destinoCoordenadas.lat
       rotaEncontrada.destino_lng = destinoCoordenadas.lng
     }
-
-    if(updateRotaDto.idCaminhao !== rotaEncontrada.caminhao?.id && updateRotaDto.idCaminhao){
+    if(updateRotaDto.idCaminhao == null || updateRotaDto.idCaminhao == 'nao_atribuido'){
+        if(rotaEncontrada.caminhao){
+          rotaEncontrada.caminhao.status = statusCaminhao.DISPONIVEL
+          await this.caminhaoRepository.save(rotaEncontrada.caminhao)
+        }
+        rotaEncontrada.caminhao = null
+      }
+    else if(updateRotaDto.idCaminhao !== rotaEncontrada.caminhao?.id && updateRotaDto.idCaminhao){
       if(rotaEncontrada.caminhao){
           rotaEncontrada.caminhao.status = statusCaminhao.DISPONIVEL
           await this.caminhaoRepository.save(rotaEncontrada.caminhao)
@@ -124,7 +131,7 @@ export class RotasService {
       caminhao.status = statusCaminhao.INDISPONIVEL
       await this.caminhaoRepository.save(caminhao)
       }
-    else if(updateRotaDto.idCaminhao == null){
+    else if(updateRotaDto.idCaminhao == null || updateRotaDto.idCaminhao == 'nao_atribuido'){
         if(rotaEncontrada.caminhao){
           rotaEncontrada.caminhao.status = statusCaminhao.DISPONIVEL
           await this.caminhaoRepository.save(rotaEncontrada.caminhao)
